@@ -45,7 +45,7 @@ class MainActivity : AppCompatActivity(){
 
     var refershReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            val loc = intent.extras.getString("lat") + ", " + intent.extras.getString("lon")
+            val loc = intent.getStringExtra("lat") + ", " + intent.getStringExtra("lon")
             findViewById<TextView>(R.id.tv_loc).text = loc
         }
     }

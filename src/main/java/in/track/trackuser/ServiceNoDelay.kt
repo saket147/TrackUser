@@ -24,9 +24,6 @@ import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 
-
-
-
 class ServiceNoDelay : Service(), GoogleApiClient.ConnectionCallbacks,
     GoogleApiClient.OnConnectionFailedListener {
 
@@ -125,21 +122,21 @@ class ServiceNoDelay : Service(), GoogleApiClient.ConnectionCallbacks,
                 super.onLocationResult(p0)
                 if (p0 != null) {
                     location = p0.lastLocation
-                    startForeground()
-                    sendBroadcast(p0.lastLocation)
-                } else {
-
+                        startForeground()
+                        sendBroadcast()
                 }
             }
         }
     }
 
-    private fun sendBroadcast(location: Location) {
+    private fun sendBroadcast() {
+        //local broadcast to update textview if app in foregorund
+
         val localBroadcastManager = LocalBroadcastManager.getInstance(applicationContext)
         val intent = Intent("ACTIONREFRESH")
         //Set Intent data
-        intent.putExtra("lat", location.latitude)
-        intent.putExtra("lon", location.longitude)
+        intent.putExtra("lat", location?.latitude.toString())
+        intent.putExtra("lon", location?.longitude.toString())
         localBroadcastManager.sendBroadcast(intent)
     }
 
@@ -159,7 +156,7 @@ class ServiceNoDelay : Service(), GoogleApiClient.ConnectionCallbacks,
         mLocationRequest?.interval = INTERVAL
         mLocationRequest?.fastestInterval = FASTEST_INTERVAL
         mLocationRequest?.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-//        mLocationRequest?.smallestDisplacement = 50f
+        mLocationRequest?.smallestDisplacement = 50f
     }
 
     private fun initGoogleApiClient() {
