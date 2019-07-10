@@ -45,9 +45,7 @@ class ServiceNoDelay : Service(), GoogleApiClient.ConnectionCallbacks,
             .setPriority(PRIORITY_MIN)
             .setCategory(Notification.CATEGORY_SERVICE)
             .build()
-        if(location != null) {
             startForeground(101, notification)
-        }
     }
 
     private fun createNotificationChannel(channelId: String, channelName: String): String {
@@ -141,7 +139,7 @@ class ServiceNoDelay : Service(), GoogleApiClient.ConnectionCallbacks,
     }
 
     private fun startLocationUpdates() {
-        var mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+        val mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
         mFusedLocationClient.requestLocationUpdates(
             mLocationRequest,
