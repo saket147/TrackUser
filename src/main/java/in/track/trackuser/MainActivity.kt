@@ -9,13 +9,18 @@ import android.content.pm.PackageManager
 import android.location.Location
 import android.widget.TextView
 import androidx.core.content.ContextCompat
+import android.content.IntentFilter
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import android.content.BroadcastReceiver
+import android.content.Context
+
 
 class MainActivity : AppCompatActivity(){
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
+        registerRefreshReceiver()
         if (ContextCompat.checkSelfPermission(
                 this,
                 android.Manifest.permission.ACCESS_FINE_LOCATION
@@ -36,6 +41,20 @@ class MainActivity : AppCompatActivity(){
             )
         }
 
+    }
+
+    var refershReceiver: BroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            val loc = intent.extras.getString("lat") + ", " + intent.extras.getString("lon")
+            findViewById<TextView>(R.id.tv_loc).text = loc
+        }
+    }
+
+    private fun registerRefreshReceiver() {
+        val intentFilter = IntentFilter()
+        intentFilter.addAction("ACTIONREFRESH")
+        LocalBroadcastManager.getInstance(this)
+            .registerReceiver(refershReceiver, intentFilter)
     }
 
     private fun startService() {

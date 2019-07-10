@@ -22,6 +22,9 @@ import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
+
+
 
 
 class ServiceNoDelay : Service(), GoogleApiClient.ConnectionCallbacks,
@@ -29,6 +32,10 @@ class ServiceNoDelay : Service(), GoogleApiClient.ConnectionCallbacks,
 
     private lateinit var mLocationCallback: LocationCallback
     private var location: Location? = null;
+    private val INTERVAL = (1000 * 10).toLong()
+    private val FASTEST_INTERVAL = (1000 * 10).toLong()
+    var mLocationRequest: LocationRequest? = null
+    var mGoogleApiClient: GoogleApiClient? = null
 
     private fun startForeground() {
         val channelId = createNotificationChannel("my_service", "My Background Service")
@@ -41,7 +48,9 @@ class ServiceNoDelay : Service(), GoogleApiClient.ConnectionCallbacks,
             .setPriority(PRIORITY_MIN)
             .setCategory(Notification.CATEGORY_SERVICE)
             .build()
-        startForeground(101, notification)
+        if(location != null) {
+            startForeground(101, notification)
+        }
     }
 
     private fun createNotificationChannel(channelId: String, channelName: String): String {
@@ -62,7 +71,6 @@ class ServiceNoDelay : Service(), GoogleApiClient.ConnectionCallbacks,
     }
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-
         super.onStartCommand(intent, flags, startId)
         if (isGooglePlayServicesAvailable()) {
             initGoogleApiClient()
@@ -97,11 +105,6 @@ class ServiceNoDelay : Service(), GoogleApiClient.ConnectionCallbacks,
         super.onTaskRemoved(rootIntent)
     }
 
-    private val INTERVAL = (1000 * 10).toLong()
-    private val FASTEST_INTERVAL = (1000 * 10).toLong()
-    var mLocationRequest: LocationRequest? = null
-    var mGoogleApiClient: GoogleApiClient? = null
-
     private fun isGooglePlayServicesAvailable(): Boolean {
         val status = GoogleApiAvailability.getInstance()
         return if (ConnectionResult.SUCCESS == status.isGooglePlayServicesAvailable(this)) {
@@ -123,16 +126,21 @@ class ServiceNoDelay : Service(), GoogleApiClient.ConnectionCallbacks,
                 if (p0 != null) {
                     location = p0.lastLocation
                     startForeground()
-                    Toast.makeText(
-                        this@ServiceNoDelay,
-                        p0.lastLocation.latitude.toString() + ", " + p0.lastLocation.longitude,
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    sendBroadcast(p0.lastLocation)
                 } else {
 
                 }
             }
         }
+    }
+
+    private fun sendBroadcast(location: Location) {
+        val localBroadcastManager = LocalBroadcastManager.getInstance(applicationContext)
+        val intent = Intent("ACTIONREFRESH")
+        //Set Intent data
+        intent.putExtra("lat", location.latitude)
+        intent.putExtra("lon", location.longitude)
+        localBroadcastManager.sendBroadcast(intent)
     }
 
     private fun startLocationUpdates() {
